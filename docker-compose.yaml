@@ -1,0 +1,43 @@
+services:
+  app:
+    build: .
+    ports:
+      - 80:80
+    restart: always
+    env_file: .env
+    depends_on:
+      - database
+      - s3
+  database:
+    image: postgres
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      POSTGRES_USER: greenatom
+      POSTGRES_PASSWORD: greenatom
+      POSTGRES_DB: greenatom
+    volumes:
+      - database-frames-service:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - 8080:8080
+  s3:
+    image: minio/minio
+    command: server --address :9099 --console-address :9000 /data
+    ports:
+      - 9000:9000
+      - 9099:9099
+    restart: always
+    environment:
+      MINIO_ROOT_USER: greenatom
+      MINIO_ROOT_PASSWORD: greenatom
+    volumes:
+      - storage-frames-service:/data
+volumes:
+  database-frames-service:
+  storage-frames-service:
